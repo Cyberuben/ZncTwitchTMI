@@ -285,46 +285,6 @@ CModule::EModRet TwitchTMI::OnChanTextMessage(CTextMessage &Message)
     if(Message.GetNick().GetNick().Equals("jtv"))
         return CModule::HALT;
 
-    if(Message.GetNick().GetNick().AsLower().Equals("hentaitheace"))
-        return CModule::CONTINUE;
-
-    CChan *chan = Message.GetChan();
-    const CString &cname = chan->GetName();
-
-    if(Message.GetText() == "FrankerZ" && std::time(nullptr) - lastFrankerZ > 10)
-    {
-        InjectMessageHelper(chan, "FrankerZ");
-        lastFrankerZ = std::time(nullptr);
-    }
-    else if(Message.GetText() == "!play" && !noLastPlay)
-    {
-        std::time_t now = std::time(nullptr);
-        auto it = lastPlay.find(cname);
-
-        if(it == lastPlay.end() || now - it->second.first >= 30) // seconds for related !play
-        {
-            lastPlay[cname] = std::make_pair(now, 1);
-        }
-        else if(now - it->second.first < 0)
-        {
-            // We are in cooldown, do nothing
-        }
-        else if(it->second.second < 3) // count of related !play
-        {
-            it->second.first = now;
-            it->second.second += 1;
-        }
-        else
-        {
-            it->second = std::make_pair(now + 30, 1); // cooldown in seconds
-
-            AddTimer(new GenericTimer(this, 5, 1, "play_timer_" + cname, "Writes !play in n seconds!", [this, chan]()
-            {
-                InjectMessageHelper(chan, "!play");
-            }));
-        }
-    }
-
     return CModule::CONTINUE;
 }
 
